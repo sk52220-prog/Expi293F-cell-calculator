@@ -1,0 +1,133 @@
+# Expi293f 細胞計算器 PWA
+
+## 🧬 功能說明
+
+這是一個專為Expi293f細胞培養設計的計算器，可以在iPhone上使用，支援離線功能。
+
+### 主要功能
+1. **Passage計算**: 根據當前濃度和預計繼代時間，計算最佳稀釋方案
+2. **Split計算**: 為transfection準備細胞，計算如何稀釋達到理想濃度
+3. **數據記錄**: 輸入細胞數據，自動計算viability並儲存歷史記錄
+4. **週計劃**: 根據transfection體積計算所需的細胞量
+
+---
+
+## 📦 檔案結構
+
+```
+cell-calculator/
+├── app.py                    # Flask後端
+├── requirements.txt          # Python套件
+├── vercel.json              # Vercel設定
+├── README.md                # 說明文件
+├── templates/
+│   └── index.html           # 主頁面
+└── static/
+    ├── manifest.json        # PWA設定
+    └── sw.js                # Service Worker
+```
+
+---
+
+## 🚀 部署到Render（免費）
+
+### 步驟1: 上傳到GitHub
+
+1. 在GitHub建立新repository: `cell-calculator`
+2. 上傳所有檔案
+
+### 步驟2: 部署到Render
+
+1. 前往 https://render.com
+2. 用GitHub帳號註冊/登入
+3. 點選「New」→「Web Service」
+4. 連接你的GitHub repository
+5. 設定：
+   - **Name**: `cell-calculator`
+   - **Region**: Singapore
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `gunicorn app:app`
+   - **Instance Type**: Free
+6. 點擊「Create Web Service」
+7. 等待3-5分鐘部署完成
+
+### 步驟3: 取得網址
+
+部署完成後會得到網址，例如：
+```
+https://cell-calculator-xxxx.onrender.com
+```
+
+---
+
+## 📱 安裝到iPhone
+
+1. 用iPhone的Safari開啟你的網址
+2. 點擊下方的「分享」按鈕 (□↑)
+3. 滑到「加入主畫面」
+4. 點擊「新增」
+5. 完成！圖示會出現在主畫面上
+
+---
+
+## 💻 本地測試
+
+```bash
+# 安裝套件
+pip install -r requirements.txt
+
+# 執行Flask
+python app.py
+
+# 在瀏覽器開啟
+http://localhost:5000
+```
+
+---
+
+## 📝 使用說明
+
+### Passage計算
+- 輸入當前細胞濃度
+- 選擇預計繼代的日期和時間
+- 系統會計算最佳稀釋方案，使細胞在目標時間達到3.0-5.0 × 10⁶ cells/ml
+
+### Split計算
+- 輸入當前細胞濃度
+- 選擇transfection的日期和時間
+- 系統會計算如何稀釋，使細胞在transfection時達到4.5-5.5 × 10⁶ cells/ml
+
+### 數據記錄
+- 輸入total cells和live cells
+- 自動計算viability
+- 點擊儲存後會記錄在本地（可離線查看）
+
+### 週計劃
+- 輸入預計transfection的總體積
+- 選擇使用的flask類型
+- 系統會計算需要的passage體積、離心體積等
+
+---
+
+## 🔧 技術細節
+
+- **後端**: Flask 3.0.0
+- **前端**: HTML5 + CSS3 + JavaScript (Vanilla)
+- **PWA**: Service Worker實現離線功能
+- **儲存**: LocalStorage（數據儲存在手機上）
+- **部署**: Gunicorn WSGI server
+
+---
+
+## ⚠️ 注意事項
+
+- Render免費版會在15分鐘無活動後休眠
+- 第一次開啟會需要10-30秒「喚醒」
+- 之後的使用都是正常速度
+- 數據儲存在本地，不會因為服務休眠而消失
+
+---
+
+## 📄 授權
+
+MIT License - 可自由使用和修改
