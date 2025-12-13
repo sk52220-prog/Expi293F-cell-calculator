@@ -1,0 +1,22 @@
+{
+  "name": "Expi293f 細胞計算器",
+  "short_name": "細胞計算器",
+  "description": "計算Expi293f細胞passage、split和transfection方案",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4A90E2",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/static/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

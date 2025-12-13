@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4A90E2">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="細胞計算器">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/icon-192.png">
+    <title>Expi293f 細胞計算器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4A90E2, #357ABD);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            border: none;
+            background: none;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: white;
+            color: #4A90E2;
+            border-bottom: 3px solid #4A90E2;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4A90E2;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #4A90E2, #357ABD);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #52c234, #3da028);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #78909c, #546e7a);
+            font-size: 14px;
+            padding: 10px;
+            margin-top: 5px;
+        }
+
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 14px;
+            width: auto;
+            display: inline-block;
+            margin: 5px;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #4A90E2;
+        }
+
+        .result h3 {
+            color: #4A90E2;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .result-item {
+            padding: 10px;
+            margin: 8px 0;
+            background: white;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .best-option {
+            background: #e3f2fd !important;
+            border: 2px solid #4A90E2;
+            font-weight: 600;
+        }
+
+        .history-item {
+            padding: 12px;
+            margin: 8px 0;
+            background: white;
+            border-radius: 8px;
+            border-left: 3px solid #4A90E2;
+            font-size: 13px;
+        }
+
+        .viability-display {
+            font-size: 24px;
+            font-weight: 700;
+            color: #4A90E2;
+            text-align: center;
+            padding: 20px;
+            background: #f0f7ff;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .time-info {
+            background: #fff3e0;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            color: #e65100;
+            text-align: center;
+        }
+
+        .flask-input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .flask-input-row select {
+            flex: 2;
+        }
+
+        .flask-input-row input {
+            flex: 1;
+        }
+
+        .flask-input-row button {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            font-size: 20px;
+            flex: 0;
+        }
+
+        .summary-box {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #4caf50;
+        }
+
+        .flask-input-inline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .flask-input-inline label {
+            margin-bottom: 0;
+            flex: 1;
+        }
+
+        .flask-input-inline input {
+            width: 80px;
+            text-align: center;
+        }
+
+        input[type="radio"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 600px) {
+            .tabs {
+                overflow-x: auto;
+            }
+
+            .tab {
+                font-size: 12px;
+                padding: 12px 8px;
+                white-space: nowrap;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🧬 Expi293f 細胞計算器</h1>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab(0)">cell log</button>
+        <button class="tab" onclick="switchTab(1)">Passage</button>
+        <button class="tab" onclick="switchTab(2)">Split</button>
+        <button class="tab" onclick="switchTab(3)">週計劃</button>
+        <button class="tab" onclick="switchTab(4)">Transfection</button>
+    </div>
+
+
+    <!-- Tab 0: cell log -->
+    <div class="tab-content active">
+        <form id="dataForm">
+            <div class="form-group">
+                <label>Passage</label>
+            <input type="number" id="passage_number" min="0" required inputmode="numeric">
+        </div>
+        <div class="form-group">
+                <label>Total cells (×10⁶/ml)</label>
+                <input type="number" step="0.01" id="total_cells" required inputmode="decimal">
+            </div>
+            <div class="form-group">
+                <label>Live cells (×10⁶/ml)</label>
+                <input type="number" step="0.01" id="live_cells" required inputmode="decimal">
+            </div>
+            <div class="viability-display" id="viability">--</div>
+            <button type="button" class="btn btn-success" onclick="saveData()">儲存數據到CSV</button>
+            <button type="button" class="btn btn-secondary" onclick="downloadCSV()">下載CSV檔案</button>
+        </form>
+        <div style="margin-top: 20px;">
+            <h3 style="color: #4A90E2; margin-bottom: 10px;">歷史記錄</h3>
+            <div id="history"></div>
+        </div>
+        <button type="button" class="btn" style="margin-top:15px; background:#e53935;" onclick="clearAllLogs()">
+            🗑️ 清除所有紀錄
+        </button>
+    </div>
+
+    <!-- Tab 1: Passage -->
+    <div class="tab-content">
+        <div class="time-info">
+            ⏰ 輸入數據後即時計算
+        </div>
+        <form id="passageForm">
+            <div class="form-group">
+                <label>當前時間</label>
+                <input type="datetime-local" id="passage_current_time" required step="60">
+                <button type="button" class="btn btn-secondary" onclick="updateCurrentTime('passage')">更新為現在時間</button>
+            </div>
+            <div class="form-group">
+                <label>當前濃度 (×10⁶ cells/ml)</label>
+                <input type="number" step="0.01" id="passage_conc" required inputmode="decimal">
+            </div>
+            <div class="form-group">
+                <label>預計繼代時間</label>
+                <input type="datetime-local" id="passage_time" required step="60">
+            </div>
+            <div class="form-group">
+                <label>總體積 (ml)</label>
+                <input type="number" step="0.1" id="passage_vol" value="30" required inputmode="numeric">
+            </div>
+        </form>
+        <div id="passageResult"></div>
+    </div>
+
+    <!-- Tab 2: Split -->
+    <div class="tab-content">
+        <div class="time-info">
+            ⏰ Transfect時間預設為隔天14:00
+        </div>
+        <form id="splitForm">
+            <div class="form-group">
+                <label>當前時間</label>
+                <input type="datetime-local" id="split_current_time" required step="60">
+                <button type="button" class="btn btn-secondary" onclick="updateCurrentTime('split')">更新為現在時間</button>
+            </div>
+            <div class="form-group">
+                <label>當前濃度 (×10⁶ cells/ml)</label>
+                <input type="number" step="0.01" id="split_conc" required inputmode="decimal">
+            </div>
+            <div class="form-group">
+                <label>Transfect時間</label>
+                <input type="datetime-local" id="transfect_time" required step="60">
+            </div>
+            <div class="form-group">
+                <label>回溶體積 (ml)</label>
+                <input type="number" step="0.1" id="split_vol" value="60" required inputmode="numeric">
+            </div>
+            <div class="form-group">
+                <label>Expression</label>
+                <input type="text" id="protein_name" placeholder="請輸入蛋白質名稱，例如：HERC5">
+            </div>
+        </form>
+        <div id="splitResult"></div>
+    </div>
+
+    <!-- Tab 3: 週計劃 -->
+    <div class="tab-content">
+        <h3 style="color: #4A90E2; margin-bottom: 15px;">輸入需要養的細胞</h3>
+        
+        <div class="flask-input-inline">
+            <label>125 mL flask (transfect 25ml)</label>
+            <input type="number" id="flask_125" placeholder="0" min="0" inputmode="numeric">
+        </div>
+
+        <div class="flask-input-inline">
+            <label>500 mL flask (transfect 100ml)</label>
+            <input type="number" id="flask_500" placeholder="0" min="0" inputmode="numeric">
+        </div>
+
+        <div class="flask-input-inline">
+            <label>1 L flask (transfect 200ml)</label>
+            <input type="number" id="flask_1000" placeholder="0" min="0" inputmode="numeric">
+        </div>
+
+        
+        <div id="weeklyResult"></div>
+    </div>
+
+    <!-- Tab 4: Transfection -->
+    <div class="tab-content">
+        <h3 style="color: #4A90E2; margin-bottom: 15px;">Transfection 配方表</h3>
+        
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                <thead>
+                    <tr style="background: #4A90E2; color: white;">
+                        <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Transfect</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">125 mL flask</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">250 mL flask</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">500 mL flask</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">1 L flask</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">1 L flask ×2</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #ddd; font-weight: 600;">DNA</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">25</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">50</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">100</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">200</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">400</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">μg</td>
+                    </tr>
+                    <tr style="background: #f8f9fa;">
+                        <td style="padding: 10px; border: 1px solid #ddd; font-weight: 600;">OptiMEM</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">1.5</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">3</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">6</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">12</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">24</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">ml</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #ddd; font-weight: 600;">ExpiFectamine</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">80</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">160</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">320</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">640</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">1280</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">μl</td>
+                    </tr>
+                    <tr style="background: #f8f9fa;">
+                        <td style="padding: 10px; border: 1px solid #ddd; font-weight: 600;">OptiMEM</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">1.4</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">2.8</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">5.6</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">11.2</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">22.4</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">ml</td>
+                    </tr>
+                    <tr style="background: #fff3e0;">
+                        <td colspan="7" style="padding: 8px; border: 1px solid #ddd; text-align: center; font-size: 12px; color: #e65100;">
+                            ⏱️ 16-18 小時
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #ddd; font-weight: 600;">Enhancer1</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">0.15</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">0.3</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">0.6</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">1.2</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">2.4</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">ml</td>
+                    </tr>
+                    <tr style="background: #f8f9fa;">
+                        <td style="padding: 10px; border: 1px solid #ddd; font-weight: 600;">Enhancer2</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">1.5</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">3</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">6</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">12</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">24</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">ml</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 10px; border-left: 4px solid #4A90E2;">
+            <h4 style="color: #4A90E2; margin-top: 0;">📝 操作步驟</h4>
+            <ol style="margin: 10px 0; padding-left: 20px; line-height: 1.8;">
+                <li>將 <strong>DNA</strong> 用 <strong>OptiMEM</strong> 稀釋</li>
+                <li>將 <strong>ExpiFectamine</strong> 用第二管 <strong>OptiMEM</strong> 稀釋，等五分鐘</li>
+                <li><strong>ExpiFectamine to DNA 室溫靜置 10-20 分鐘</strong></li>
+                <li><strong>滴入<strong>細胞培養液中</li>
+                <li><strong>16-18 小時</strong> 後加入 Enhancer1 和 Enhancer2</li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ====== 純前端 CellCalculator ======
+    class CellCalculator {
+      constructor() {
+        this.doubling_time = 24;
+      }
+
+      calculatePassage(currentConc, currentDatetimeStr, targetDatetimeStr, totalVolume) {
+        const currentTime = new Date(currentDatetimeStr);
+        const targetTime = new Date(targetDatetimeStr);
+        const timeDiffHours = (targetTime - currentTime) / (1000 * 60 * 60);
+
+        const optimalTarget = 4.15;
+        const dilutionList = [0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50];
+
+        const results = dilutionList.map(dilutionConc => {
+          const doublings = timeDiffHours / this.doubling_time;
+          const predictedConc = dilutionConc * Math.pow(2, doublings);
+          const cellsNeededMl = (dilutionConc * totalVolume) / currentConc;
+          const mediumNeededMl = totalVolume - cellsNeededMl;
+
+          return {
+            dilution_conc: dilutionConc,
+            cells_ml: Number(cellsNeededMl.toFixed(1)),
+            medium_ml: Number(mediumNeededMl.toFixed(1)),
+            predicted_conc: Number(predictedConc.toFixed(2))
+          };
+        });
+
+        const best = results.reduce((acc, item) => {
+          return Math.abs(item.predicted_conc - optimalTarget) <
+                 Math.abs(acc.predicted_conc - optimalTarget) ? item : acc;
+        }, results[0]);
+
+        const timeInfo = {
+          current_time: formatDateTime(currentTime),
+          target_time: formatDateTime(targetTime),
+          hours_diff: timeDiffHours,
+          days_diff: timeDiffHours / 24
+        };
+
+        return { results, best, time_info: timeInfo };
+      }
+
+      calculateSplit(currentConc, currentDatetimeStr, transfectDatetimeStr, totalVolume) {
+        const currentTime = new Date(currentDatetimeStr);
+        const transfectTime = new Date(transfectDatetimeStr);
+        const timeDiffHours = (transfectTime - currentTime) / (1000 * 60 * 60);
+
+        const optimalTarget = 5.2;
+        const splitList = [2.50, 2.60, 2.70, 2.80, 2.90, 3.00];
+
+        const results = splitList.map(splitConc => {
+          const doublings = timeDiffHours / this.doubling_time;
+          const predictedConc = splitConc * Math.pow(2, doublings);
+          const cellsNeededMl = (splitConc * totalVolume) / currentConc;
+
+          return {
+            split_conc: splitConc,
+            cells_ml: Number(cellsNeededMl.toFixed(1)),
+            resuspend_ml: totalVolume,
+            predicted_conc: Number(predictedConc.toFixed(2))
+          };
+        });
+
+        const best = results.reduce((acc, item) => {
+          return Math.abs(item.predicted_conc - optimalTarget) <
+                 Math.abs(acc.predicted_conc - optimalTarget) ? item : acc;
+        }, results[0]);
+
+        const timeInfo = {
+          current_time: formatDateTime(currentTime),
+          target_time: formatDateTime(transfectTime),
+          hours_diff: timeDiffHours,
+          days_diff: timeDiffHours / 24
+        };
+
+        return { results, best, time_info: timeInfo };
+      }
+    }
+
+    function formatDateTime(dateObj) {
+      const pad = n => String(n).padStart(2, '0');
+      const year = dateObj.getFullYear();
+      const month = pad(dateObj.getMonth() + 1);
+      const day = pad(dateObj.getDate());
+      const hour = pad(dateObj.getHours());
+      const minute = pad(dateObj.getMinutes());
+      return `${year}-${month}-${day} ${hour}:${minute}`;
+    }
+
+    const cellCalc = new CellCalculator();
+
+    // ====== 以下是原本的程式 ======
+
+    let csvData = [];
+
+    let domElements = {};
+
+    function initDOMCache() {
+        domElements = {
+            // Cell log
+            passageNumber: document.getElementById('passage_number'),
+            totalCells: document.getElementById('total_cells'),
+            liveCells: document.getElementById('live_cells'),
+            viability: document.getElementById('viability'),
+            history: document.getElementById('history'),
+            
+            // Passage
+            passageCurrentTime: document.getElementById('passage_current_time'),
+            passageConc: document.getElementById('passage_conc'),
+            passageTime: document.getElementById('passage_time'),
+            passageVol: document.getElementById('passage_vol'),
+            passageResult: document.getElementById('passageResult'),
+            
+            // Split
+            splitCurrentTime: document.getElementById('split_current_time'),
+            splitConc: document.getElementById('split_conc'),
+            transfectTime: document.getElementById('transfect_time'),
+            splitVol: document.getElementById('split_vol'),
+            splitResult: document.getElementById('splitResult'),
+            
+            // Weekly
+            flaskInputs: document.getElementById('flaskInputs'),
+            weeklyResult: document.getElementById('weeklyResult')
+        };
+    }
+
+    const FLASK_TRANSFECT_VOLUMES = {
+        125: 25,
+        500: 100,
+        1000: 200
+    };
+
+    const FLASK_CULTURE_VOLUMES = {
+        125: {min: 30, max: 35, avg: 32.5},
+        500: {min: 120, max: 140, avg: 130},
+        1000: {min: 240, max: 280, avg: 260}
+    };
+
+    function getCurrentTimeString() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
+
+    function getTomorrowTwopmString() {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(14, 0, 0, 0);
+        const year = tomorrow.getFullYear();
+        const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
+        const day = String(tomorrow.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}T14:00`;
+    }
+
+    function getThreeDaysLaterString() {
+        const threeDays = new Date();
+        threeDays.setDate(threeDays.getDate() + 3);  // 加三天
+        
+        const year = threeDays.getFullYear();
+        const month = String(threeDays.getMonth() + 1).padStart(2, '0');
+        const day = String(threeDays.getDate()).padStart(2, '0');
+        const hours = String(threeDays.getHours()).padStart(2, '0');
+        const minutes = String(threeDays.getMinutes()).padStart(2, '0');
+        
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
+
+    function updateCurrentTime(tab) {
+        const timeString = getCurrentTimeString();
+        if (tab === 'passage') {
+            document.getElementById('passage_current_time').value = timeString;
+            autoCalculatePassage();
+        } else if (tab === 'split') {
+            document.getElementById('split_current_time').value = timeString;
+            autoCalculateSplit();
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', function () {
+        // 初始化 DOM 緩存
+        initDOMCache();
+         // 時間初始化
+        updateCurrentTime('passage');
+        updateCurrentTime('split');
+        domElements.transfectTime.value = getTomorrowTwopmString();
+        // passage_time 預設為三天後
+        document.getElementById('passage_time').value = getThreeDaysLaterString();
+
+        // 載入 cell log 資料
+        loadCSVData();
+        displayHistory();
+        applyLastLiveToConcentration();
+
+        setupAutoCalculation();
+        
+        // 週計劃自動計算
+        ['flask_125', 'flask_500', 'flask_1000'].forEach(id => {
+            const elem = document.getElementById(id);
+            elem.addEventListener('input', calculateWeeklyPlan);
+            elem.addEventListener('change', calculateWeeklyPlan);
+        });
+        
+        // 初始化週計劃計算
+        calculateWeeklyPlan();
+    });
+
+
+    function setupAutoCalculation() {
+        // Passage
+        ['passage_current_time', 'passage_conc', 'passage_time', 'passage_vol'].forEach(id => {
+            const elem = document.getElementById(id);
+            elem.addEventListener('input', () => {
+                autoCalculatePassage();
+                if (id === 'passage_conc') {
+                    document.getElementById('split_conc').value = elem.value;
+                    autoCalculateSplit();
+                }
+            });
+            elem.addEventListener('change', () => {
+                autoCalculatePassage();
+                if (id === 'passage_conc') {
+                    document.getElementById('split_conc').value = elem.value;
+                    autoCalculateSplit();
+                }
+            });
+        });
+
+        // Split
+        ['split_current_time', 'split_conc', 'transfect_time', 'split_vol'].forEach(id => {
+            const elem = document.getElementById(id);
+            elem.addEventListener('input', autoCalculateSplit);
+            elem.addEventListener('change', autoCalculateSplit);
+        });
+
+        // Viability 自動計算
+        ['total_cells', 'live_cells'].forEach(id => {
+            const elem = document.getElementById(id);
+            elem.addEventListener('input', () => {
+                calculateViability();
+            });
+            elem.addEventListener('change', () => {
+                calculateViability();
+            });
+        });
+    }
+
+    function autoCalculatePassage() {
+        const currentTime = document.getElementById('passage_current_time').value;
+        const currentConc = document.getElementById('passage_conc').value;
+        const targetTime = document.getElementById('passage_time').value;
+        const totalVol = document.getElementById('passage_vol').value;
+
+        if (!currentTime || !currentConc || !targetTime || !totalVol) return;
+
+        try {
+            // 直接在前端計算，不再呼叫 /calculate_passage
+            const result = cellCalc.calculatePassage(
+                parseFloat(currentConc),
+                currentTime,  // ISO 字串格式
+                targetTime,   // ISO 字串格式
+                parseFloat(totalVol)
+            );
+            
+            displayPassageResult(result);
+        } catch (error) {
+            console.error('計算錯誤:', error);
+            domElements.passageResult.innerHTML = `
+                <div class="result">
+                    <h3 style="color: #ff9800;">⚠️ 計算發生錯誤</h3>
+                    <div class="result-item" style="background: #fff3e0;">
+                        請檢查輸入的數值是否正確。<br>
+                        <small>${error.message}</small>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+
+    function autoCalculateSplit() {
+        const currentTime = document.getElementById('split_current_time').value;
+        const currentConc = document.getElementById('split_conc').value;
+        const transfectTime = document.getElementById('transfect_time').value;
+        const totalVol = document.getElementById('split_vol').value;
+
+        if (!currentTime || !currentConc || !transfectTime || !totalVol) return;
+
+        const data = {
+            current_datetime: currentTime,
+            current_conc: currentConc,
+            transfect_datetime: transfectTime,
+            total_volume: totalVol
+        };
+
+        try {
+            const result = cellCalc.calculateSplit(
+                parseFloat(currentConc),
+                currentTime,
+                transfectTime,  // 正確的變數名
+                parseFloat(totalVol)
+            );
+            displaySplitResult(result);
+        } catch (error) {
+            console.error('計算錯誤:', error);
+            // 如果是網路錯誤，顯示提示
+            if (error.name === 'TypeError' || error.message.includes('fetch')) {
+                domElements.splitResult.innerHTML = `
+                    <div class="result">
+                        <h3 style="color: #ff9800;">⚠️ 提示</h3>
+                        <div class="result-item" style="background: #fff3e0;">
+                            無法連接到伺服器。請確認 Flask 後端已啟動。<br>
+                            <small>（Cell log 和週計劃功能不受影響）</small>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    }
+
+    function switchTab(index) {
+        const tabs = document.querySelectorAll('.tab');
+        const contents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach((tab, i) => {
+            tab.classList.toggle('active', i === index);
+        });
+
+        contents.forEach((content, i) => {
+            content.classList.toggle('active', i === index);
+        });
+    }
+
+    function displayPassageResult(data) {
+        const best = data.best;
+        const timeInfo = data.time_info;
+
+        const validResults = data.results.filter(r => 
+            r.predicted_conc >= 3.0 && 
+            r.predicted_conc <= 5.0 && 
+            r.medium_ml > 0
+        );
+
+        if (validResults.length === 0) {
+            document.getElementById('passageResult').innerHTML = `
+                <div class="result">
+                    <h3 style="color: #f44336;">⚠️ 警告</h3>
+                    <div class="result-item" style="background: #ffebee; border: 2px solid #f44336;">
+                        <strong>無法找到符合條件的稀釋方案！</strong><br>
+                        在預計時間內，所有稀釋濃度都無法達到3.0-5.0 × 10⁶/ml的目標範圍。<br>
+                        請調整預計繼代時間或當前濃度。
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '<div class="result">';
+
+        if (timeInfo) {
+            html += '<div style="background: #e3f2fd; padding: 10px; border-radius: 8px; margin-bottom: 15px;">';
+            html += `<strong>⏱️ 時間計算:</strong><br>`;
+            html += `從 ${timeInfo.current_time} 到 ${timeInfo.target_time}<br>`;
+            html += `間隔: ${timeInfo.hours_diff.toFixed(1)} 小時 (${timeInfo.days_diff.toFixed(1)} 天)`;
+            html += '</div>';
+        }
+
+        const bestInRange = validResults.find(r => r.dilution_conc === best.dilution_conc);
+        const displayBest = bestInRange || validResults[0];
+
+        html += '<h3>🎯 推薦方案</h3>';
+        html += `<div class="result-item best-option" style="display: flex; align-items: center; gap: 10px;">`;
+        html += `<input type="radio" name="passage_result" value='${JSON.stringify({
+            cells_ml: displayBest.cells_ml,
+            medium_ml: displayBest.medium_ml,
+            dilution_conc: displayBest.dilution_conc,
+            predicted_conc: displayBest.predicted_conc
+        })}' checked style="flex-shrink: 0;">`;
+        html += `<div style="flex: 1;">`;
+        html += `<strong>用 ${displayBest.cells_ml} ml 細胞</strong><br>`;
+        html += `加 ${displayBest.medium_ml} ml medium<br>`;
+        html += `稀釋至 ${displayBest.dilution_conc} × 10⁶/ml<br>`;
+        html += `預計濃度: <strong>${displayBest.predicted_conc} × 10⁶/ml</strong> ✓`;
+        html += `</div></div>`;
+
+        if (validResults.length > 1) {
+            html += '<h3 style="margin-top: 15px;">其他符合範圍的選項</h3>';
+            validResults.forEach(r => {
+                if (r.dilution_conc !== displayBest.dilution_conc) {
+                    html += `<div class="result-item" style="display: flex; align-items: center; gap: 10px;">`;
+                    html += `<input type="radio" name="passage_result" value='${JSON.stringify({
+                        cells_ml: r.cells_ml,
+                        medium_ml: r.medium_ml,
+                        dilution_conc: r.dilution_conc,
+                        predicted_conc: r.predicted_conc
+                    })}' style="flex-shrink: 0;">`;
+                    html += `<div style="flex: 1;">`;
+                    html += `${r.dilution_conc} × 10⁶: ${r.cells_ml}ml細胞 + ${r.medium_ml}ml medium → ${r.predicted_conc} × 10⁶ ✓`;
+                    html += `</div></div>`;
+                }
+            });
+        }
+
+        html += `<button type="button" class="btn" style="margin-top: 15px;" onclick="savePassageResult()">💾 儲存選取的方案</button>`;
+
+
+        html += '</div>';
+        document.getElementById('passageResult').innerHTML = html;
+    }
+
+    function displaySplitResult(data) {
+        const best = data.best;
+        const timeInfo = data.time_info;
+
+        const validResults = data.results.filter(r => r.predicted_conc >= 4.5 && r.predicted_conc <= 5.5);
+
+        if (validResults.length === 0) {
+            document.getElementById('splitResult').innerHTML = `
+                <div class="result">
+                    <h3 style="color: #f44336;">⚠️ 警告</h3>
+                    <div class="result-item" style="background: #ffebee; border: 2px solid #f44336;">
+                        <strong>無法找到符合條件的split方案！</strong><br>
+                        在預計時間內，所有split濃度都無法達到4.5-5.5 × 10⁶/ml的目標範圍。<br>
+                        請調整Transfect時間或當前濃度。
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '<div class="result">';
+
+        if (timeInfo) {
+            html += '<div style="background: #e3f2fd; padding: 10px; border-radius: 8px; margin-bottom: 15px;">';
+            html += `<strong>⏱️ 時間計算:</strong><br>`;
+            html += `從 ${timeInfo.current_time} 到 ${timeInfo.target_time}<br>`;
+            html += `間隔: ${timeInfo.hours_diff.toFixed(1)} 小時 (${timeInfo.days_diff.toFixed(1)} 天)`;
+            html += '</div>';
+        }
+
+        const bestInRange = validResults.find(r => r.split_conc === best.split_conc);
+        const displayBest = bestInRange || validResults[0];
+
+        html += '<h3>🎯 推薦方案</h3>';
+        html += `<div class="result-item best-option" style="display: flex; align-items: center; gap: 10px;">`;
+        html += `<input type="radio" name="split_result" value='${JSON.stringify({
+            cells_ml: displayBest.cells_ml,
+            resuspend_ml: displayBest.resuspend_ml,
+            split_conc: displayBest.split_conc,
+            predicted_conc: displayBest.predicted_conc
+        })}' checked style="flex-shrink: 0;">`;
+        html += `<div style="flex: 1;">`;
+        html += `<strong>用 ${displayBest.cells_ml} ml 細胞</strong><br>`;
+        html += `回溶到 ${displayBest.resuspend_ml} ml<br>`;
+        html += `Split濃度: ${displayBest.split_conc} × 10⁶/ml<br>`;
+        html += `預計濃度: <strong>${displayBest.predicted_conc} × 10⁶/ml</strong> ✓`;
+        html += `</div></div>`;
+
+        if (validResults.length > 1) {
+            html += '<h3 style="margin-top: 15px;">其他符合範圍的選項</h3>';
+            validResults.forEach(r => {
+                if (r.split_conc !== displayBest.split_conc) {
+                    html += `<div class="result-item" style="display: flex; align-items: center; gap: 10px;">`;
+                    html += `<input type="radio" name="split_result" value='${JSON.stringify({
+                        cells_ml: r.cells_ml,
+                        resuspend_ml: r.resuspend_ml,
+                        split_conc: r.split_conc,
+                        predicted_conc: r.predicted_conc
+                    })}' style="flex-shrink: 0;">`;
+                    html += `<div style="flex: 1;">`;
+                    html += `${r.split_conc} × 10⁶: ${r.cells_ml}ml細胞 → ${r.predicted_conc} × 10⁶ ✓`;
+                    html += `</div></div>`;
+                }
+            });
+        }
+
+        html += `<button type="button" class="btn" style="margin-top: 15px;" onclick="saveSplitResult()">💾 儲存選取的方案</button>`;
+
+
+        html += '</div>';
+        document.getElementById('splitResult').innerHTML = html;
+    }
+
+    function calculateViability() {
+        const total = parseFloat(domElements.totalCells.value);
+        const live = parseFloat(domElements.liveCells.value);
+
+        if (total && live && total > 0) {
+            const viability = ((live / total) * 100).toFixed(1);
+            domElements.viability.textContent = viability + '%';
+        } else {
+            domElements.viability.textContent = '--';
+        }
+    }
+
+    function loadCSVData() {
+        const saved = localStorage.getItem('cellCSVData');
+        if (saved) {
+            csvData = JSON.parse(saved);
+        } else {
+            csvData = [];
+        }
+    }
+
+    function saveData() {
+        const passage = domElements.passageNumber.value;
+        const total = domElements.totalCells.value;
+        const live = domElements.liveCells.value;
+        const viability = domElements.viability.textContent;
+
+        if (passage && total && live && viability !== '--') {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const dateTimeStr = `${year}-${month}-${day} ${hours}:${minutes}`;
+
+            const record = {
+                id: csvData.length + 1,
+                passage: parseInt(passage),
+                datetime: dateTimeStr,
+                total: parseFloat(total),
+                live: parseFloat(live),
+                viability: viability
+            };
+
+            csvData.push(record);
+            localStorage.setItem('cellCSVData', JSON.stringify(csvData));
+
+            // 更新歷史 + 把最新 live 套到 Passage / Split
+            displayHistory();
+            // 清空輸入欄位
+            domElements.totalCells.value = '';
+            domElements.liveCells.value = '';
+            domElements.viability.textContent = '--';
+            
+            // 自動設定下一筆 Passage 和當前濃度
+            applyLastLiveToConcentration();
+
+            alert('已儲存！');
+        } else {
+            alert('請先輸入完整數據');
+        }
+    }
+
+    function downloadCSV() {
+        if (csvData.length === 0) {
+            alert('沒有數據可下載');
+            return;
+        }
+
+        let csv = 'ID,Type,Passage,Date Time,Protein,Total cells/ml,Live cells/ml,Viability,Cells ml,Medium/Resuspend ml,Dilution/Split Conc,Predicted Conc\n';
+        csvData.forEach(record => {
+            if (record.type === 'Passage') {
+                csv += `${record.id},Passage,,${record.datetime},,,,,${record.cells_ml},${record.medium_ml},${record.dilution_conc},${record.predicted_conc}\n`;
+            } else if (record.type === 'Split') {
+                csv += `${record.id},Split,,${record.datetime},"${record.protein_name || ''}",,,${record.cells_ml},${record.resuspend_ml},${record.split_conc},${record.predicted_conc}\n`;
+            } else {
+                csv += `${record.id},Cell Count,${record.passage},${record.datetime},,${record.total},${record.live},${record.viability},,,,\n`;
+            }
+        });
+
+        csvData.forEach(record => {
+            const type = record.type || 'Cell Count';
+            if (record.type === 'Passage') {
+                csv += `${record.id},Passage,,${record.datetime},,,,"${record.cells_ml}","${record.medium_ml}","${record.dilution_conc}","${record.predicted_conc}"\n`;
+            } else if (record.type === 'Split') {
+                csv += `${record.id},Split,,${record.datetime},,,,"${record.cells_ml}","${record.resuspend_ml}","${record.split_conc}","${record.predicted_conc}"\n`;
+            } else {
+                csv += `${record.id},Cell Count,${record.passage},${record.datetime},${record.total},${record.live},${record.viability},,,,\n`;
+            }
+        });
+
+
+        const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'cell_data.csv');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function displayHistory() {
+        let html = '';
+
+        if (csvData.length === 0) {
+            html = '<p style="text-align:center;color:#999;">尚無記錄</p>';
+        } else {
+            csvData.slice(-10).reverse().forEach((record, index) => {
+                const actualIndex = csvData.length - 1 - index;
+                html += `<div class="history-item" id="record-${actualIndex}">`;
+                
+                if (record.type === 'Passage') {
+                    html += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">`;
+                    html += `<strong>#${record.id} - Passage - ${record.datetime}</strong>`;
+                    html += `<div style="display:flex; gap:5px;">`;
+                    html += `<button onclick="editRecord(${actualIndex})" style="background:#4A90E2; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer; font-size:12px;">✏️</button>`;
+                    html += `<button onclick="deleteRecord(${actualIndex})" style="background:#e53935; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer; font-size:12px;">🗑️</button>`;
+                    html += `</div></div>`;
+                    html += `細胞: ${record.cells_ml}ml | Medium: ${record.medium_ml}ml | 稀釋至: ${record.dilution_conc} × 10⁶ | 預計: ${record.predicted_conc} × 10⁶`;
+                } else if (record.type === 'Split') {
+                    html += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">`;
+                    html += `<strong>#${record.id} - Split - ${record.datetime}</strong>`;
+                    html += `<div style="display:flex; gap:5px;">`;
+                    html += `<button onclick="editRecord(${actualIndex})" style="background:#4A90E2; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer; font-size:12px;">✏️</button>`;
+                    html += `<button onclick="deleteRecord(${actualIndex})" style="background:#e53935; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer; font-size:12px;">🗑️</button>`;
+                    html += `</div></div>`;
+                    if (record.protein_name) {
+                        html += `蛋白質: ${record.protein_name}<br>`;
+                    }
+                    html += `細胞: ${record.cells_ml}ml | 回溶至: ${record.resuspend_ml}ml | Split濃度: ${record.split_conc} × 10⁶ | 預計: ${record.predicted_conc} × 10⁶`;
+                } else {
+                    html += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">`;
+                    html += `<strong>#${record.id} - P${record.passage} - ${record.datetime}</strong>`;
+                    html += `<div style="display:flex; gap:5px;">`;
+                    html += `<button onclick="editRecord(${actualIndex})" style="background:#4A90E2; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer; font-size:12px;">✏️</button>`;
+                    html += `<button onclick="deleteRecord(${actualIndex})" style="background:#e53935; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer; font-size:12px;">🗑️</button>`;
+                    html += `</div></div>`;
+                    html += `Total: ${record.total} | Live: ${record.live} | Viability: ${record.viability}`;
+                }
+
+                html += `</div>`;
+            });
+        }
+
+        domElements.history.innerHTML = html;
+    }
+
+
+    function applyLastLiveToConcentration() {
+        // 設定當前濃度
+        if (csvData.length > 0) {
+            const last = csvData[csvData.length - 1];
+            if (last.live) {
+                const live = last.live;
+                domElements.passageConc.value = live;
+                domElements.splitConc.value = live;
+                autoCalculatePassage();
+                autoCalculateSplit();
+            }
+            
+            // 設定 Passage 為最後一筆 +1
+            if (last.passage) {
+                domElements.passageNumber.value = last.passage + 1;
+            }
+        } else {
+            // 如果沒有歷史記錄，預設為 P1
+            if (domElements.passageNumber) {
+                domElements.passageNumber.value = 1;
+            }
+        }
+    }
+
+    function calculateWeeklyPlan() {
+        // 讀取三個 flask 的數量
+        const count125 = parseInt(document.getElementById('flask_125').value) || 0;
+        const count500 = parseInt(document.getElementById('flask_500').value) || 0;
+        const count1000 = parseInt(document.getElementById('flask_1000').value) || 0;
+        
+        let totalTransfectVolume = 0;
+        let flaskSummary = [];
+        
+        // 計算每種 flask 的 transfect 體積
+        if (count125 > 0) {
+            const vol = count125 * FLASK_TRANSFECT_VOLUMES[125];
+            totalTransfectVolume += vol;
+            flaskSummary.push({type: 125, count: count125, transfectVol: FLASK_TRANSFECT_VOLUMES[125], total: vol});
+        }
+        
+        if (count500 > 0) {
+            const vol = count500 * FLASK_TRANSFECT_VOLUMES[500];
+            totalTransfectVolume += vol;
+            flaskSummary.push({type: 500, count: count500, transfectVol: FLASK_TRANSFECT_VOLUMES[500], total: vol});
+        }
+        
+        if (count1000 > 0) {
+            const vol = count1000 * FLASK_TRANSFECT_VOLUMES[1000];
+            totalTransfectVolume += vol;
+            flaskSummary.push({type: 1000, count: count1000, transfectVol: FLASK_TRANSFECT_VOLUMES[1000], total: vol});
+        }
+        
+        if (totalTransfectVolume === 0) {
+            document.getElementById('weeklyResult').innerHTML = '';
+            return;
+        }
+        
+        // 計算需要的細胞量
+        const neededCells = totalTransfectVolume * 3 / 4.5;
+        
+        // 建議split用的flask
+        const splitFlask = suggestFlask(neededCells);
+        
+        // 用原始需求量計算要離心的體積
+        const splitVolume = neededCells * 2.8 / 3.5;
+        
+        // 建議passage用的flask
+        const passageFlask = suggestFlask(splitVolume);
+        
+        let html = '<div class="result">';
+        html += '<h3>📊 Transfect 總覽</h3>';
+        html += '<div class="summary-box">';
+        flaskSummary.forEach(f => {
+            html += `${f.type} mL: ${f.count} 管 × ${f.transfectVol} ml = ${f.total} ml<br>`;
+        });
+        html += `<strong>總計: ${totalTransfectVolume.toFixed(1)} ml</strong>`;
+        html += '</div>';
+        
+        html += '<h3>🧪 Transfect 準備</h3>';
+        html += '<div class="result-item best-option">';
+        html += `預計需要細胞: ${neededCells.toFixed(1)} ml<br>`;
+        html += `(計算: ${totalTransfectVolume.toFixed(1)} × 3/4.5)<br><br>`;
+        html += `建議Split配置:<br>`;
+        html += `<strong>${splitFlask.description}</strong>`;
+        html += '</div>';
+        
+        html += '<h3>🔬 Split 準備</h3>';
+        html += '<div class="result-item">';
+        html += `預計要離心: ${splitVolume.toFixed(1)} ml<br>`;
+        html += `(計算: ${neededCells.toFixed(1)} × 2.8/3.5)<br><br>`;
+        html += `建議前一次Passage配置:<br>`;
+        html += `<strong>${passageFlask.description}</strong>`;
+        html += '</div>';
+        
+        html += '</div>';
+        document.getElementById('weeklyResult').innerHTML = html;
+    }
+
+
+    function suggestFlask(volume) {
+        // 確保至少 30ml
+        const targetVolume = Math.max(volume, 30);
+        
+        // 決定使用哪種 flask
+        let flaskType, flaskInfo;
+        
+        if (targetVolume <= 105) {
+            flaskType = 125;
+            flaskInfo = FLASK_CULTURE_VOLUMES[125];
+        } else if (targetVolume <= 230) {
+            flaskType = 500;
+            flaskInfo = FLASK_CULTURE_VOLUMES[500];
+        } else {
+            flaskType = 1000;
+            flaskInfo = FLASK_CULTURE_VOLUMES[1000];
+        }
+        
+        // 如果單管就能滿足（在 min-max 範圍內）
+        if (targetVolume >= flaskInfo.min && targetVolume <= flaskInfo.max) {
+            return {
+                description: `1 管 ${flaskType} mL flask 每管 ${targetVolume.toFixed(1)} ml`,
+                actualVolume: targetVolume
+            };
+        }
+        
+        // 需要多管：從 1 管開始試，找到「平均每管」落在範圍內的管數
+        for (let count = 1; count <= 10; count++) {
+            const perFlask = targetVolume / count;
+            
+            if (perFlask >= flaskInfo.min && perFlask <= flaskInfo.max) {
+                // 找到了！每管 perFlask ml，共 count 管
+                return {
+                    description: `${count} 管 ${flaskType} mL flask 每管 ${perFlask.toFixed(1)} ml`,
+                    actualVolume: targetVolume
+                };
+            }
+        }
+        
+        // 如果都找不到（平均值一直小於 min），就用最少管數 + min 值
+        const minCount = Math.ceil(targetVolume / flaskInfo.max);
+        const actualPerFlask = Math.max(targetVolume / minCount, flaskInfo.min);
+        
+        return {
+            description: `${minCount} 管 ${flaskType} mL flask 每管 ${actualPerFlask.toFixed(1)} ml`,
+            actualVolume: minCount * actualPerFlask
+        };
+    }
+
+function savePassageResult() {
+    const selected = document.querySelector('input[name="passage_result"]:checked');
+    if (!selected) {
+        alert('請選擇一個方案');
+        return;
+    }
+    
+    const data = JSON.parse(selected.value);
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const dateTimeStr = `${year}-${month}-${day} ${hours}:${minutes}`;
+    
+    const record = {
+        id: csvData.length + 1,
+        passage: '', // 不記錄 passage
+        datetime: dateTimeStr,
+        type: 'Passage',
+        cells_ml: data.cells_ml,
+        medium_ml: data.medium_ml,
+        dilution_conc: data.dilution_conc,
+        predicted_conc: data.predicted_conc,
+        total: '',
+        live: '',
+        viability: ''
+    };
+    
+    csvData.push(record);
+    localStorage.setItem('cellCSVData', JSON.stringify(csvData));
+    displayHistory();
+    
+    alert('✅ Passage 方案已儲存！');
+}
+
+function saveSplitResult() {
+    const selected = document.querySelector('input[name="split_result"]:checked');
+    if (!selected) {
+        alert('請選擇一個方案');
+        return;
+    }
+    
+    const data = JSON.parse(selected.value);
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const dateTimeStr = `${year}-${month}-${day} ${hours}:${minutes}`;
+    const expression = document.getElementById('protein_name').value || '';
+
+    const record = {
+        id: csvData.length + 1,
+        passage: '', // 不記錄 passage
+        datetime: dateTimeStr,
+        type: 'Split',
+        protein_name: expression,
+        cells_ml: data.cells_ml,
+        resuspend_ml: data.resuspend_ml,
+        split_conc: data.split_conc,
+        predicted_conc: data.predicted_conc,
+        total: '',
+        live: '',
+        viability: ''
+    };
+    
+    csvData.push(record);
+    localStorage.setItem('cellCSVData', JSON.stringify(csvData));
+    displayHistory();
+    
+    alert('✅ Split 方案已儲存！');
+}
+
+function editRecord(index) {
+    const record = csvData[index];
+    
+    let html = '<div style="background:#f0f7ff; padding:15px; border-radius:8px; margin:10px 0;">';
+    html += '<h4 style="margin-top:0;">編輯記錄 #' + record.id + '</h4>';
+    
+    if (record.type === 'Passage') {
+        html += `<label>細胞 (ml): <input type="number" id="edit_cells" value="${record.cells_ml}" step="0.1"></label><br>`;
+        html += `<label>Medium (ml): <input type="number" id="edit_medium" value="${record.medium_ml}" step="0.1"></label><br>`;
+        html += `<label>稀釋濃度 (×10⁶): <input type="number" id="edit_dilution" value="${record.dilution_conc}" step="0.1"></label><br>`;
+        html += `<label>預計濃度 (×10⁶): <input type="number" id="edit_predicted" value="${record.predicted_conc}" step="0.1"></label><br>`;
+    } else if (record.type === 'Split') {
+        html += `<label>Expression: <input type="text" id="edit_protein" value="${record.protein_name || ''}" style="width:200px;"></label><br>`;
+        html += `<label>細胞 (ml): <input type="number" id="edit_cells" value="${record.cells_ml}" step="0.1"></label><br>`;
+        html += `<label>回溶體積 (ml): <input type="number" id="edit_resuspend" value="${record.resuspend_ml}" step="0.1"></label><br>`;
+        html += `<label>Split濃度 (×10⁶): <input type="number" id="edit_split" value="${record.split_conc}" step="0.1"></label><br>`;
+        html += `<label>預計濃度 (×10⁶): <input type="number" id="edit_predicted" value="${record.predicted_conc}" step="0.1"></label><br>`;
+    } else {
+        html += `<label>Passage: <input type="number" id="edit_passage" value="${record.passage}"></label><br>`;
+        html += `<label>Total cells (×10⁶/ml): <input type="number" id="edit_total" value="${record.total}" step="0.01"></label><br>`;
+        html += `<label>Live cells (×10⁶/ml): <input type="number" id="edit_live" value="${record.live}" step="0.01"></label><br>`;
+        html += `<label>Viability: <input type="text" id="edit_viability" value="${record.viability}" readonly></label><br>`;
+    }
+    
+    html += '<button onclick="saveEdit(' + index + ')" class="btn" style="margin-top:10px;">💾 儲存</button> ';
+    html += '<button onclick="cancelEdit()" class="btn btn-secondary" style="margin-top:10px;">❌ 取消</button>';
+    html += '</div>';
+    
+    document.getElementById('record-' + index).innerHTML = html;
+}
+
+function saveEdit(index) {
+    const record = csvData[index];
+    
+    if (record.type === 'Passage') {
+        record.cells_ml = parseFloat(document.getElementById('edit_cells').value);
+        record.medium_ml = parseFloat(document.getElementById('edit_medium').value);
+        record.dilution_conc = parseFloat(document.getElementById('edit_dilution').value);
+        record.predicted_conc = parseFloat(document.getElementById('edit_predicted').value);
+    } else if (record.type === 'Split') {
+        record.protein_name = document.getElementById('edit_protein').value;
+        record.cells_ml = parseFloat(document.getElementById('edit_cells').value);
+        record.resuspend_ml = parseFloat(document.getElementById('edit_resuspend').value);
+        record.split_conc = parseFloat(document.getElementById('edit_split').value);
+        record.predicted_conc = parseFloat(document.getElementById('edit_predicted').value);
+    } else {
+        record.passage = parseInt(document.getElementById('edit_passage').value);
+        record.total = parseFloat(document.getElementById('edit_total').value);
+        record.live = parseFloat(document.getElementById('edit_live').value);
+        const total = record.total;
+        const live = record.live;
+        if (total && live && total > 0) {
+            record.viability = ((live / total) * 100).toFixed(1) + '%';
+        }
+    }
+    
+    localStorage.setItem('cellCSVData', JSON.stringify(csvData));
+    displayHistory();
+    alert('✅ 已更新記錄！');
+}
+
+function cancelEdit() {
+    displayHistory();
+}
+
+function deleteRecord(index) {
+    if (confirm('確定要刪除這筆記錄嗎？')) {
+        csvData.splice(index, 1);
+        // 重新編號
+        csvData.forEach((record, i) => {
+            record.id = i + 1;
+        });
+        localStorage.setItem('cellCSVData', JSON.stringify(csvData));
+        displayHistory();
+        alert('✅ 已刪除記錄！');
+    }
+}
+
+
+function clearAllLogs() {
+    if (confirm('⚠️ 確定要清除所有 cell log 記錄嗎？\n\n此動作無法復原！')) {
+        localStorage.removeItem('cellCSVData');
+        csvData = [];
+        displayHistory();
+        domElements.passageConc.value = '';
+        domElements.splitConc.value = '';
+        domElements.passageNumber.value = '1';
+        domElements.totalCells.value = '';
+        domElements.liveCells.value = '';
+        domElements.viability.textContent = '--';
+        alert('✅ 已清除所有紀錄');
+    }
+}
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/static/sw.js').catch(() => {});
+    }
+</script>
+</body>
+</html>
