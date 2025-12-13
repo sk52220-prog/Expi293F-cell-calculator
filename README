@@ -1,133 +1,123 @@
-# Expi293f 細胞計算器 PWA
+Expi293f 細胞計算器 PWA 🧬
+這是一個專為 Expi293f 細胞培養設計的計算器，可在手機或電腦使用，支援離線功能與資料本地儲存。
 
-## 🧬 功能說明
+✨ 主要功能
+1. Cell Log 📊
 
-這是一個專為Expi293f細胞培養設計的計算器，可以在iPhone上使用，支援離線功能。
+記錄每次 passage 的總細胞數、活細胞數與存活率
 
-### 主要功能
-1. **Passage計算**: 根據當前濃度和預計繼代時間，計算最佳稀釋方案
-2. **Split計算**: 為transfection準備細胞，計算如何稀釋達到理想濃度
-3. **數據記錄**: 輸入細胞數據，自動計算viability並儲存歷史記錄
-4. **週計劃**: 根據transfection體積計算所需的細胞量
+自動計算 Viability
 
----
+支援編輯、刪除與匯出 CSV
 
-## 📦 檔案結構
+2. Passage 計算 🔄
 
-```
+根據當前濃度和預計繼代時間，計算最佳稀釋方案
+
+自動推薦預測濃度在 3.0-5.0 × 10⁶ cells/ml 範圍內的方案
+
+顯示所需細胞體積與培養基體積
+
+3. Split 計算 🧪
+
+為 transfection 準備細胞，計算如何稀釋達到理想濃度
+
+目標濃度範圍：4.5-5.5 × 10⁶ cells/ml
+
+自動記錄 protein name 便於追蹤
+
+4. 週計劃 📅
+
+根據 transfection 體積計算所需的細胞量
+
+自動建議 flask 類型與數量
+
+顯示 Passage 與 Split 的完整規劃
+
+5. Transfection 參考表 📋
+
+不同 flask 規格的 DNA、ExpiFectamine、OptiMEM、Enhancer 用量
+
+快速查閱實驗配方
+
+🚀 使用方式
+在電腦或手機本機開啟
+
+下載專案檔案：index.html、sw.js、manifest.json
+
+用瀏覽器直接打開 index.html 即可使用
+
+注意：直接用檔案協定開啟時，PWA 功能（安裝到桌面、離線快取）可能無法啟用。
+
+部署到網路（推薦）
+
+使用 GitHub Pages（完全免費）
+
+在 GitHub 建立新的 repository
+
+將 index.html、sw.js、manifest.json 上傳到 repository 根目錄
+
+到 Settings → Pages，選擇 main 分支作為來源
+
+等待部署完成，取得網址（例如 https://你的帳號.github.io/repo名稱）
+
+在手機或電腦瀏覽器輸入網址即可使用
+
+使用 Vercel / Netlify
+
+註冊帳號後連結 GitHub 或直接拖曳資料夾上傳
+
+自動部署完成後會提供網址
+
+手機瀏覽器開啟網址，可選擇「加入主畫面」當 App 使用
+
+💻 技術說明
+純前端設計
+
+無需後端伺服器：所有計算邏輯（Passage、Split、Weekly 計畫）都在瀏覽器端執行
+
+本地資料儲存：使用瀏覽器 localStorage 儲存 Cell log 紀錄，重新整理頁面仍可保留
+
+計算公式：基於 Expi293f 細胞 24 小時倍增時間，自動計算不同時間點的預測濃度
+
+PWA 功能（選配）
+
+搭配 manifest.json 與 sw.js 可配置成 Progressive Web App
+
+在 HTTPS 網站上支援：
+
+安裝到桌面／主畫面
+
+離線快取部分資源
+
+全螢幕體驗
+
+檔案結構
+
+text
 cell-calculator/
-├── app.py                    # Flask後端
-├── requirements.txt          # Python套件
-├── vercel.json              # Vercel設定
-├── README.md                # 說明文件
-├── templates/
-│   └── index.html           # 主頁面
-└── static/
-    ├── manifest.json        # PWA設定
-    └── sw.js                # Service Worker
-```
+├── index.html          ← 主程式（包含所有邏輯與樣式）
+├── sw.js              ← Service Worker（PWA 離線快取）
+├── manifest.json      ← Web App Manifest（PWA 安裝設定）
+└── README.md          ← 專案說明
+🛠️ 開發與修改
+所有邏輯都在 index.html 的 <script> 區塊中：
 
----
+計算邏輯：修改 CellCalculator 類別中的公式與參數
 
-## 🚀 部署到Render（免費）
+濃度範圍：在 displayPassageResult / displaySplitResult 函式中調整篩選條件
 
-### 步驟1: 上傳到GitHub
+介面樣式：直接編輯 <style> 區塊的 CSS
 
-1. 在GitHub建立新repository: `cell-calculator`
-2. 上傳所有檔案
+📱 在 iPhone 上使用
+用 Safari 打開部署後的網址
 
-### 步驟2: 部署到Render
+點擊底部「分享」按鈕
 
-1. 前往 https://render.com
-2. 用GitHub帳號註冊/登入
-3. 點選「New」→「Web Service」
-4. 連接你的GitHub repository
-5. 設定：
-   - **Name**: `cell-calculator`
-   - **Region**: Singapore
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `gunicorn app:app`
-   - **Instance Type**: Free
-6. 點擊「Create Web Service」
-7. 等待3-5分鐘部署完成
+選擇「加入主畫面」
 
-### 步驟3: 取得網址
+完成後可像一般 App 一樣打開使用，支援離線功能
 
-部署完成後會得到網址，例如：
-```
-https://cell-calculator-xxxx.onrender.com
-```
-
----
-
-## 📱 安裝到iPhone
-
-1. 用iPhone的Safari開啟你的網址
-2. 點擊下方的「分享」按鈕 (□↑)
-3. 滑到「加入主畫面」
-4. 點擊「新增」
-5. 完成！圖示會出現在主畫面上
-
----
-
-## 💻 本地測試
-
-```bash
-# 安裝套件
-pip install -r requirements.txt
-
-# 執行Flask
-python app.py
-
-# 在瀏覽器開啟
-http://localhost:5000
-```
-
----
-
-## 📝 使用說明
-
-### Passage計算
-- 輸入當前細胞濃度
-- 選擇預計繼代的日期和時間
-- 系統會計算最佳稀釋方案，使細胞在目標時間達到3.0-5.0 × 10⁶ cells/ml
-
-### Split計算
-- 輸入當前細胞濃度
-- 選擇transfection的日期和時間
-- 系統會計算如何稀釋，使細胞在transfection時達到4.5-5.5 × 10⁶ cells/ml
-
-### 數據記錄
-- 輸入total cells和live cells
-- 自動計算viability
-- 點擊儲存後會記錄在本地（可離線查看）
-
-### 週計劃
-- 輸入預計transfection的總體積
-- 選擇使用的flask類型
-- 系統會計算需要的passage體積、離心體積等
-
----
-
-## 🔧 技術細節
-
-- **後端**: Flask 3.0.0
-- **前端**: HTML5 + CSS3 + JavaScript (Vanilla)
-- **PWA**: Service Worker實現離線功能
-- **儲存**: LocalStorage（數據儲存在手機上）
-- **部署**: Gunicorn WSGI server
-
----
-
-## ⚠️ 注意事項
-
-- Render免費版會在15分鐘無活動後休眠
-- 第一次開啟會需要10-30秒「喚醒」
-- 之後的使用都是正常速度
-- 數據儲存在本地，不會因為服務休眠而消失
-
----
-
-## 📄 授權
-
-MIT License - 可自由使用和修改
+⚠️ 免責聲明
+此工具僅作為實驗規劃與教學輔助，實際操作仍需依照實驗室標準操作流程（SOP）與專業判斷進行。
+使用本工具所產生的任何結果與後果，請自行負責。
