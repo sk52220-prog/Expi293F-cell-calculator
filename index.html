@@ -386,8 +386,35 @@
             <input type="number" id="flask_1000" placeholder="0" min="0" inputmode="numeric">
         </div>
 
-        
         <div id="weeklyResult"></div>
+
+        <!-- Split 輸入區域 -->
+        <div id="splitInputSection" style="display:none; margin-top: 20px;">
+            <h3 style="color: #4A90E2; margin-bottom: 15px;">📝 填寫 Split 計畫 (Day -1)</h3>
+            <div class="form-group">
+                <label>Split 總體積 (mL)</label>
+                <input type="number" step="0.1" id="split_total_volume" placeholder="30.0" inputmode="decimal" oninput="calculatePassageFromSplit()">
+            </div>
+        </div>
+
+        <!-- Passage 輸入區域 -->
+        <div id="passageInputSection" style="display:none; margin-top: 20px;">
+            <h3 style="color: #4A90E2; margin-bottom: 15px;">📝 填寫 Passage 計畫 (Day -2)</h3>
+            <div id="passageCalculationResult"></div>
+            <div class="form-group">
+                <label>Passage 總體積 (mL)</label>
+                <input type="number" step="0.1" id="passage_total_volume" placeholder="30.0" inputmode="decimal">
+            </div>
+            <button type="button" class="btn btn-success" onclick="saveWeeklyPlan()">💾 儲存週計劃</button>
+        </div>
+
+        <!-- 歷史紀錄 -->
+        <div style="margin-top: 20px;">
+            <h3 style="color: #4A90E2; margin-bottom: 10px;">歷史紀錄</h3>
+            <div id="weeklyHistory"></div>
+        </div>
+        <button type="button" class="btn btn-secondary" onclick="downloadWeeklyCSV()" style="margin-top: 10px;">📥 下載週計劃 CSV</button>
+        <button type="button" class="btn" style="margin-top: 10px; background: #e53935;" onclick="clearWeeklyLogs()">🗑️ 清除所有週計劃紀錄</button>
     </div>
 
     <!-- Tab 4: Transfection -->
@@ -580,6 +607,9 @@
     // ====== 以下是原本的程式 ======
 
     let csvData = [];
+        let weeklyData = [];
+        let weeklyPlanData = { transfect: {}, split: {}, passage: {} };
+
 
     let domElements = {};
 
@@ -1149,77 +1179,201 @@
     }
 
     function calculateWeeklyPlan() {
-        // 讀取三個 flask 的數量
         const count125 = parseInt(document.getElementById('flask_125').value) || 0;
         const count500 = parseInt(document.getElementById('flask_500').value) || 0;
         const count1000 = parseInt(document.getElementById('flask_1000').value) || 0;
-        
+
         let totalTransfectVolume = 0;
         let flaskSummary = [];
-        
-        // 計算每種 flask 的 transfect 體積
+
         if (count125 > 0) {
             const vol = count125 * FLASK_TRANSFECT_VOLUMES[125];
             totalTransfectVolume += vol;
             flaskSummary.push({type: 125, count: count125, transfectVol: FLASK_TRANSFECT_VOLUMES[125], total: vol});
         }
-        
         if (count500 > 0) {
             const vol = count500 * FLASK_TRANSFECT_VOLUMES[500];
             totalTransfectVolume += vol;
             flaskSummary.push({type: 500, count: count500, transfectVol: FLASK_TRANSFECT_VOLUMES[500], total: vol});
         }
-        
         if (count1000 > 0) {
             const vol = count1000 * FLASK_TRANSFECT_VOLUMES[1000];
             totalTransfectVolume += vol;
             flaskSummary.push({type: 1000, count: count1000, transfectVol: FLASK_TRANSFECT_VOLUMES[1000], total: vol});
         }
-        
+
         if (totalTransfectVolume === 0) {
             document.getElementById('weeklyResult').innerHTML = '';
+            document.getElementById('splitInputSection').style.display = 'none';
+            document.getElementById('passageInputSection').style.display = 'none';
             return;
         }
-        
-        // 計算需要的細胞量
+
         const neededCells = totalTransfectVolume * 3 / 4.5;
-        
-        // 建議split用的flask
         const splitFlask = suggestFlask(neededCells);
-        
-        // 用原始需求量計算要離心的體積
-        const splitVolume = neededCells * 2.8 / 3.5;
-        
-        // 建議passage用的flask
-        const passageFlask = suggestFlask(splitVolume);
-        
+
+        weeklyPlanData.transfect = {
+            totalVolume: totalTransfectVolume,
+            neededCells: neededCells,
+            flaskSummary: flaskSummary,
+            suggestedSplit: splitFlask
+        };
+
         let html = '<div class="result">';
-        html += '<h3>📊 Transfect 總覽</h3>';
+        html += '<h3>📊 Transfect 總覽 (Day 0)</h3>';
         html += '<div class="summary-box">';
         flaskSummary.forEach(f => {
             html += `${f.type} mL: ${f.count} 管 × ${f.transfectVol} ml = ${f.total} ml<br>`;
         });
         html += `<strong>總計: ${totalTransfectVolume.toFixed(1)} ml</strong>`;
         html += '</div>';
-        
-        html += '<h3>🧪 Transfect 準備</h3>';
+        html += '<h3>🧪 Transfect 當天需要</h3>';
         html += '<div class="result-item best-option">';
-        html += `預計需要細胞: ${neededCells.toFixed(1)} ml<br>`;
-        html += `(計算: ${totalTransfectVolume.toFixed(1)} × 3/4.5)<br><br>`;
-        html += `建議Split配置:<br>`;
-        html += `<strong>${splitFlask.description}</strong>`;
+        html += `需要細胞: <strong>${neededCells.toFixed(1)} ml</strong><br>`;
+        html += `<small>(計算: ${totalTransfectVolume.toFixed(1)} × 3/4.5)</small><br><br>`;
         html += '</div>';
-        
-        html += '<h3>🔬 Split 準備</h3>';
-        html += '<div class="result-item">';
-        html += `預計要離心: ${splitVolume.toFixed(1)} ml<br>`;
-        html += `(計算: ${neededCells.toFixed(1)} × 2.8/3.5)<br><br>`;
-        html += `建議前一次Passage配置:<br>`;
-        html += `<strong>${passageFlask.description}</strong>`;
-        html += '</div>';
-        
-        html += '</div>';
+
         document.getElementById('weeklyResult').innerHTML = html;
+        document.getElementById('splitInputSection').style.display = 'block';
+        document.getElementById('passageInputSection').style.display = 'none';
+    }
+
+    function calculatePassageFromSplit() {
+        const splitTotalVolume = parseFloat(document.getElementById('split_total_volume').value) || 0;
+
+        if (splitTotalVolume === 0) {
+            document.getElementById('passageInputSection').style.display = 'none';
+            return;
+        }
+
+        weeklyPlanData.split = { totalVolume: splitTotalVolume };
+
+        const neededCells = weeklyPlanData.transfect.neededCells;
+        const splitVolume = splitTotalVolume * 2.8 / 3.5;
+
+
+        weeklyPlanData.passage = {
+            suggestedVolume: splitVolume,
+        };
+
+        let html = '<div class="result-item">';
+        html += `Split 總體積: ${splitTotalVolume.toFixed(1)} ml<br><br>`;
+        html += `前一次 Passage 需要準備: <strong>${splitVolume.toFixed(1)} ml</strong><br>`;
+        html += `<small>(計算: ${splitTotalVolume.toFixed(1)} × 2.8/3.5)</small><br><br>`;
+        html += '</div>';
+
+        document.getElementById('passageCalculationResult').innerHTML = html;
+        document.getElementById('passageInputSection').style.display = 'block';
+    }
+
+    function saveWeeklyPlan() {
+        const passageTotalVolume = parseFloat(document.getElementById('passage_total_volume').value) || 0;
+
+        if (passageTotalVolume === 0) {
+            alert('請填寫 Passage 總體積');
+            return;
+        }
+
+        weeklyPlanData.passage.totalVolume = passageTotalVolume;
+
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const dateTimeStr = `${year}-${month}-${day} ${hours}:${minutes}`;
+
+        const record = {
+            id: weeklyData.length + 1,
+            datetime: dateTimeStr,
+            flaskSummary: weeklyPlanData.transfect.flaskSummary,
+            totalTransfectVolume: weeklyPlanData.transfect.totalVolume,
+            neededCells: weeklyPlanData.transfect.neededCells,
+            suggestedSplit: weeklyPlanData.transfect.suggestedSplit.description,
+            splitVolume: weeklyPlanData.split.totalVolume,
+            suggestedPassage: '',
+            passageVolume: passageTotalVolume
+        };
+
+        weeklyData.push(record);
+        localStorage.setItem('weeklyPlanData', JSON.stringify(weeklyData));
+        displayWeeklyHistory();
+        alert('週計劃已儲存！');
+    }
+
+    function loadWeeklyData() {
+        const saved = localStorage.getItem('weeklyPlanData');
+        weeklyData = saved ? JSON.parse(saved) : [];
+    }
+
+    function displayWeeklyHistory() {
+        const container = document.getElementById('weeklyHistory');
+        if (!container) return;
+
+        if (weeklyData.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:#999;">尚無紀錄</p>';
+            return;
+        }
+
+        let html = '';
+        weeklyData.slice(-10).reverse().forEach((record, index) => {
+            const actualIndex = weeklyData.length - 1 - index;
+            html += `<div class="history-item" id="weekly-record-${actualIndex}">`;
+            html += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">`;
+            html += `<strong>#${record.id} － ${record.datetime}</strong>`;
+            html += `<button onclick="deleteWeeklyRecord(${actualIndex})" style="background:#e53935; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer; font-size:12px;">刪除</button>`;
+            html += '</div>';
+            html += '<div style="font-size:13px; color:#555;">';
+            record.flaskSummary.forEach(f => {
+                html += `${f.type} mL × ${f.count} 管 = ${f.total} ml &nbsp;`;
+            });
+            html += `→ 總計 <strong>${record.totalTransfectVolume.toFixed(1)} ml</strong><br>`;
+            html += `需要細胞: <strong>${record.neededCells.toFixed(1)} ml</strong>　建議 Split: ${record.suggestedSplit}<br>`;
+            html += `Split 體積: <strong>${record.splitVolume.toFixed(1)} ml</strong>　建議 Passage: ${record.suggestedPassage}<br>`;
+            html += `Passage 體積: <strong>${record.passageVolume.toFixed(1)} ml</strong>`;
+            html += '</div></div>';
+        });
+
+        container.innerHTML = html;
+    }
+
+    function deleteWeeklyRecord(index) {
+        if (confirm('確定要刪除這筆週計劃紀錄？')) {
+            weeklyData.splice(index, 1);
+            weeklyData.forEach((r, i) => r.id = i + 1);
+            localStorage.setItem('weeklyPlanData', JSON.stringify(weeklyData));
+            displayWeeklyHistory();
+        }
+    }
+
+    function downloadWeeklyCSV() {
+        if (weeklyData.length === 0) {
+            alert('尚無週計劃紀錄');
+            return;
+        }
+        let csv = '編號,時間,Flask 組合,Transfect 總體積 (ml),需要細胞 (ml),建議 Split,Split 體積 (ml),建議 Passage,Passage 體積 (ml)\n';
+        weeklyData.forEach(record => {
+            const flaskStr = record.flaskSummary.map(f => `${f.type}mL×${f.count}`).join('+');
+            csv += `${record.id},${record.datetime},${flaskStr},${record.totalTransfectVolume.toFixed(1)},${record.neededCells.toFixed(1)},"${record.suggestedSplit}",${record.splitVolume.toFixed(1)},"${record.suggestedPassage}",${record.passageVolume.toFixed(1)}\n`;
+        });
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.setAttribute('href', URL.createObjectURL(blob));
+        link.setAttribute('download', `週計劃_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function clearWeeklyLogs() {
+        if (confirm('確定要清除所有週計劃紀錄？')) {
+            localStorage.removeItem('weeklyPlanData');
+            weeklyData = [];
+            displayWeeklyHistory();
+            alert('已清除所有週計劃紀錄');
+        }
     }
 
 
