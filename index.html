@@ -1565,22 +1565,30 @@
         }
     }
 
-    // 需求1: Passage 總體積不可小於 Split 總體積
+    // Passage 總體積不可小於「前一次 Passage 需要準備」的建議值
     function validatePassageTotalVolume() {
-        const passageTotalVolume = parseFloat(document.getElementById('passage_total_volume').value) || 0;
-        const splitTotalVolume = weeklyPlanData.split.totalVolume || 0;
+        const passageTotalVolume = parseFloat(
+            document.getElementById('passage_total_volume').value
+        ) || 0;
+
+        // 這個值由 calculatePassageFromSplit() 計算：
+        // splitTotalVolume × 2.8 / 3.5
+        const suggestedPassageVolume = weeklyPlanData.passage.suggestedVolume || 0;
 
         domElements.passageVolumeError.style.display = 'none';
         domElements.passageVolumeError.textContent = '';
         domElements.saveWeeklyPlanBtn.disabled = false;
 
+        // 尚未填寫時不顯示錯誤；saveWeeklyPlan() 會另外要求必填
         if (passageTotalVolume === 0) {
             return true;
         }
 
-        if (passageTotalVolume < splitTotalVolume) {
+        if (passageTotalVolume < suggestedPassageVolume) {
             domElements.passageVolumeError.textContent =
-                `⚠️ Passage 總體積 (${passageTotalVolume.toFixed(1)} ml) 不可小於 Split 總體積 (${splitTotalVolume.toFixed(1)} ml)`;
+                `⚠️ Passage 總體積 (${passageTotalVolume.toFixed(1)} ml) ` +
+                `不可小於前一次 Passage 需要準備的體積 ` +
+                `(${suggestedPassageVolume.toFixed(1)} ml)`;
             domElements.passageVolumeError.style.display = 'block';
             domElements.saveWeeklyPlanBtn.disabled = true;
             return false;
